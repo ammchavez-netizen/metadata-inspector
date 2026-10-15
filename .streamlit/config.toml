@@ -1,0 +1,14 @@
+[server]
+# Allow large video files (in MB)
+maxUploadSize = 4096
+headless = false
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "light"
+primaryColor = "#2E6BE6"
+
+[client]
+toolbarMode = "minimal"
