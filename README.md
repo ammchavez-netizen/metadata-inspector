@@ -1,12 +1,13 @@
 # 🗂️ Metadata Inspector & Scrubber
 
-A local Streamlit app to **view** and **remove** hidden metadata (GPS location, camera/phone model, author, timestamps, software, comments…) from images, documents, video and audio files. Everything runs on your own PC — files never leave your machine.
+A local Streamlit app to **view**, **edit**, and **remove** hidden metadata (GPS location, camera/phone model, author, timestamps, software, comments…) from images, documents, video and audio files. Everything runs on your own PC — files never leave your machine.
 
 ## Features
 
 | Option | What it does |
 |---|---|
 | 🔍 **Check metadata** | Shows all metadata grouped by type (EXIF, GPS, PDF info, video tags…), flags privacy-sensitive fields, gives a map link for GPS photos, and lets you export a JSON report. |
+| ✏️ **Edit metadata** | Shows an editable table of the file's metadata. Change values, clear a value to delete a field, or add custom fields (PNG, PDF, audio/video). Saves an edited copy and shows a before/after comparison. |
 | 🧹 **Remove metadata** | Creates a cleaned copy, shows a before/after count, lists exactly what was removed, and re-scans the cleaned file so you can verify it. Your original is never modified. |
 
 ### Supported formats
@@ -21,6 +22,18 @@ A local Streamlit app to **view** and **remove** hidden metadata (GPS location, 
 | Audio | MP3, FLAC, OGG, M4A, WAV, AAC, WMA | Tags and cover art removed; audio untouched |
 
 Any other file type can still be opened in *Check metadata* (best effort).
+
+### What you can edit
+
+| Type | Editable fields | Custom fields |
+|---|---|---|
+| JPG, TIFF, WebP | Artist, Copyright, Description, Comment, Make, Model, Software, dates, lens, serial, **GPS location** | — |
+| PNG | Title, Author, Description, Copyright, Creation Time, Software, Comment, Source | ✅ |
+| PDF | Title, Author, Subject, Keywords, Creator, Producer, creation/modified dates | ✅ |
+| DOCX, XLSX, PPTX | Title, Subject, Author, Keywords, Comments, Last Modified By, Category, Created, Modified, Company, Manager | — |
+| Audio / video | title, artist, album, genre, date, comment, copyright, track, creation time, location… | ✅ |
+
+JPG and PNG edits are lossless (only the metadata block is rewritten). Dates accept `YYYY-MM-DD HH:MM:SS`; GPS takes decimal degrees (e.g. `32.834722`, `-97.081944`).
 
 ## Setup & run
 
@@ -46,6 +59,7 @@ Your browser opens at `http://localhost:8501`. Click **Browse files**, pick a fi
 metadata_tool/
 ├── app.py               # Streamlit UI
 ├── metadata_core.py     # Read/remove engine (usable without the UI)
+├── metadata_edit.py     # Edit engine
 ├── requirements.txt
 ├── run_windows.bat
 ├── run_mac_linux.sh
@@ -59,6 +73,9 @@ import metadata_core as mc
 sections = mc.read_metadata("photo.jpg")
 print(mc.to_json(sections))
 mc.remove_metadata("photo.jpg", "photo_clean.jpg")
+
+import metadata_edit as me
+me.write_metadata("photo.jpg", "photo_edited.jpg", {"Artist": "Jane Doe"})
 ```
 
 ## Notes & limitations

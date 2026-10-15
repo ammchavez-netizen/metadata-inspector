@@ -119,6 +119,14 @@ def _fmt(value, limit: int = 300) -> str:
     return s if len(s) <= limit else s[:limit] + f"… ({len(s)} chars)"
 
 
+def _fix_utf8(s: str) -> str:
+    """EXIF text is read as Latin-1; repair values that were really UTF-8 (e.g. 'Â©' -> '©')."""
+    try:
+        return s.encode("latin-1").decode("utf-8") if not s.isascii() else s
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return s
+
+
 def ffmpeg_exe() -> str:
     try:
         import imageio_ffmpeg
@@ -230,13 +238,13 @@ def _read_image(path: Path) -> list[Section]:
             if tag in _TIFF_STRUCTURAL:          # image layout, not descriptive
                 tech[f"TIFF › {name}"] = _fmt(val, 80)
             else:
-                base[name] = _fmt(val)
+                base[name] = _fix_utf8(_fmt(val))
         if base:
             sections.append(Section("EXIF (main)", METADATA, base))
 
         try:
             sub = exif.get_ifd(0x8769)
-            items = {ExifTags.TAGS.get(t, f"Tag 0x{t:04X}"): _fmt(v) for t, v in sub.items()}
+            items = {ExifTags.TAGS.get(t, f"Tag 0x{t:04X}"): _fix_utf8(_fmt(v)) for t, v in sub.items()}
             if items:
                 sections.append(Section("EXIF (camera settings)", METADATA, items))
         except Exception:
